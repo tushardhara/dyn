@@ -18,6 +18,10 @@
     "nosql"
   ],
   "author": "Tushar Dhara <tushardharaster@gmail.com>",
+  "contributors": [
+    "Shivan Trivedi <shivantrivedi14103277@gmail.com>",
+    "Sandip Das <sandyquit2014@gmail.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tushardhara/dyn/issues"
