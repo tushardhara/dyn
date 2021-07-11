@@ -1,6 +1,6 @@
 {
   "name": "ff_dyn",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DynamoDB data mapper for node.js",
   "main": "index.js",
   "scripts": {
