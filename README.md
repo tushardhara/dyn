@@ -1,5 +1,7 @@
-# dyn
+# @awsx/dynamodb
 
-## Wrapper module as a data mapper in node.js with aws sdk support for all operations with respect to DynamoDB.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Detailed description and instructions to use the module are coming soon...
+### Wrapper module as a data mapper in node.js with aws sdk support for all operations with respect to DynamoDB.
+
+##### Detailed description and instructions to use the module are coming soon...
