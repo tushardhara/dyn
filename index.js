@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk')
 const _ = require('underscore')
-const dynamodb = new AWS.DynamoDB({
+let dynamodb = new AWS.DynamoDB({
   apiVersion: '2012-08-10'
 })
 dynamodb = new AWS.DynamoDB.DocumentClient({ service: dynamodb })
