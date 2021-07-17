@@ -31,5 +31,7 @@
     "aws-sdk": "^2.943.0",
     "underscore": "^1.13.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^7.30.0"
+  }
 }
