@@ -64,18 +64,26 @@ let getAllDocumentDataCount = async (client, method, params, result, pageData) =
 
 const removeEmpty = (obj) => {
   const o = JSON.parse(JSON.stringify(obj)); // Clone source oect.
-  Object.keys(o).forEach((key) => {
-    if (o[key] && _.isObject(o[key])) {
-      o[key] = removeEmpty(o[key]);
-    } else if (_.isUndefined(o[key]) || _.isNull(o[key]) || o[key] === "") {
-      delete o[key];
-    }
-  });
-  return o; // Return new object.
+  return _.chain(o).omit(_.isNull).
+    omit(_.isUndefined).
+    omit((value) => {
+      if (_.isString(value)) {
+        return value === "";
+      } else if (_.isObject(value)) {
+        return _.isEmpty(value);
+      }
+    }).
+    value(); // Return new object.
 };
 
 exports.scan = async (tableName, query, ...theArgs) => {
   try {
+    if (typeof tableName !== "string" && tableName !== "") {
+      throw new Error("tableName should be string");
+    }
+    if (typeof query !== "object" || Object.entries(query).length === 0) {
+      throw new Error("Key should be object");
+    }
     let params = {
       TableName: tableName,
       ScanFilter: {}
