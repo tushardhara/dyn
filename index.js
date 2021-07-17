@@ -111,7 +111,7 @@ exports.scan = async (tableName, query, ...theArgs) => {
     let result = await awsfun(client, "scan", params);
     return result["Items"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -415,13 +415,13 @@ exports.findN = async (tableName, query, ...theArgs) => {
     };
     params["RequestItems"][tableName] = {};
     let keys = Object.keys(query);
-    let temp_query = query[keys[0]]["IN"].map((x) => {
+    let tempQuery = query[keys[0]]["IN"].map((x) => {
       let y = {};
       y[keys[0]] = x;
       return y;
     });
     params["RequestItems"][tableName] = {
-      Keys: temp_query
+      Keys: tempQuery
     };
     if (projection) {
       params["RequestItems"][tableName]["AttributesToGet"] = Object.keys(projection);
@@ -479,7 +479,7 @@ exports.findOne = async (tableName, query, ...theArgs) => {
     let result = await awsfun(client, "get", params);
     return result["Item"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -548,7 +548,7 @@ exports.updateOne = async (tableName, query, update, ...theArgs) => {
     let result = await awsfun(client, "update", params);
     return result["Attributes"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -572,7 +572,7 @@ exports.insertOne = async (tableName, query, ...theArgs) => {
     let result = await awsfun(client, "put", params);
     return result["Attributes"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -651,7 +651,7 @@ exports.remove = async (tableName, query) => {
     let result = await awsfun(client, "delete", params);
     return result["Attributes"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -678,7 +678,7 @@ exports.core = async (option, query) => {
     let result = await awsfun(client, option, query);
     return result;
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
 
@@ -701,6 +701,6 @@ exports.corepagination = async (option, query, cacheParam, limit) => {
     }
     return result["Items"];
   } catch (e) {
-    throw Error(e);
+    throw new Error(e.message);
   }
 };
