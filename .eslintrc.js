@@ -18,7 +18,10 @@ module.exports = {
         "array-callback-return": "off",
         "array-element-newline": "error",
         "arrow-body-style": "off",
-        "arrow-parens": "off",
+        "arrow-parens": [
+          "error",
+          "always"
+        ],
         "arrow-spacing": [
             "error",
             {

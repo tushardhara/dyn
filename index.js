@@ -64,10 +64,10 @@ let getAllDocumentDataCount = async (client, method, params, result, pageData) =
 
 const removeEmpty = (obj) => {
   const o = JSON.parse(JSON.stringify(obj)); // Clone source oect.
-  Object.keys(o).forEach(key => {
-    if (o[key] && typeof o[key] === "object") {
+  Object.keys(o).forEach((key) => {
+    if (o[key] && _.isObject(o[key])) {
       o[key] = removeEmpty(o[key]);
-    } else if (o[key] === undefined || o[key] === null || o[key] === "") {
+    } else if (_.isUndefined(o[key]) || _.isNull(o[key]) || o[key] === "") {
       delete o[key];
     }
   });
