@@ -1,5 +1,7 @@
 const AWS = require("aws-sdk");
+const AmazonDaxClient = require('amazon-dax-client')
 const _ = require("underscore");
+
 let dynamodb = new AWS.DynamoDB({
   apiVersion: "2012-08-10"
 });
@@ -18,6 +20,14 @@ const awsfun = (type, method, params) => {
     });
   });
 };
+
+const daxClientConnection  = async(endpoint) =>{
+  const dax = new AmazonDaxClient({
+       endpoints: endpoint   // Note : typeof endpoint is "array"
+  })
+  const daxClient = new AWS.DynamoDB.DocumentClient({ service: dax })
+  return daxClient
+}
 
 // Helper method to get combined data from every document
 let getAllPageData = async (client, method, params, result, pageData) => {
@@ -330,7 +340,7 @@ exports.findAll = async (tableName, query, ...theArgs) => {
     if (typeof query !== "object" || Object.entries(query).length === 0) {
       throw new Error("Key should be object");
     }
-    let index, filter, projection, limit;
+    let projection, cacheParam, index, filter, cacheClient, cacheEndpoint, limit;
     for (let i = 0; i < theArgs.length; i++) {
       if (i === 0 && typeof theArgs[i] === "string") {
         index = theArgs[i];
@@ -344,8 +354,14 @@ exports.findAll = async (tableName, query, ...theArgs) => {
         limit = theArgs[i];
       } else if (i === 2 && typeof theArgs[i] === "object") {
         projection = theArgs[i];
-      } else if (i === 3 && typeof theArgs[i] === "object") {
-        projection = theArgs[i];
+      } else if (i === 3 && typeof theArgs[i] === "number") {
+        limit = theArgs[i];
+      } else if (i === 2 && typeof theArgs[i] === 'boolean') {
+        cacheParam = theArgs[i]
+        cacheEndpoint = theArgs[i+1]
+      } else if (i === 3 && typeof theArgs[i] === 'boolean') {
+        cacheParam = theArgs[i]
+        cacheEndpoint = theArgs[i+1]
       }
     }
 
@@ -355,6 +371,9 @@ exports.findAll = async (tableName, query, ...theArgs) => {
     };
     if (index) {
       params["IndexName"] = index;
+    }
+    if (cacheParam === true) {
+      cacheClient = await daxClientConnection(cacheEndpoint)
     }
     if (filter) {
       let keys = Object.keys(filter);
@@ -393,9 +412,9 @@ exports.findAll = async (tableName, query, ...theArgs) => {
     });
 
     // Recursively fetching records via pagination using 'query' method with 'LastEvaluatedKey' and 'ExclusiveStartKey' primary key technique
-    var result = await awsfun(client, "query", params);
+    let result = cacheParam ? await awsfun(cacheClient, 'query', params) : await awsfun(client, 'query', params)
     let pageData = result;
-    result = await getAllPageData(client, "query", params, result, pageData);
+    result = cacheParam ? await getAllPageData(cacheClient, "query", params, result, pageData): await getAllPageData(client, "query", params, result, pageData)
     return result["Items"];
   } catch (e) {
     throw new Error(e.message);
@@ -443,53 +462,63 @@ exports.findN = async (tableName, query, ...theArgs) => {
 
 exports.findOne = async (tableName, query, ...theArgs) => {
   try {
-    let projection, index, filter;
+    let projection, cacheParam, index, filter, cacheClient, cacheEndpoint
     for (let i = 0; i < theArgs.length; i++) {
-      if (i === 0 && typeof theArgs[i] === "object") {
-        projection = theArgs[i];
-      } else if (i === 1 && typeof theArgs[i] === "object") {
-        filter = theArgs[i];
-      } else if (i === 0 && typeof theArgs[i] === "string") {
-        index = theArgs[i];
-      } else if (i === 1 && typeof theArgs[i] === "string") {
-        index = theArgs[i];
+      if (i === 0 && typeof theArgs[i] === 'object') {
+        projection = theArgs[i]
+      } else if (i === 1 && typeof theArgs[i] === 'object') {
+        filter = theArgs[i]
+      } else if (i === 0 && typeof theArgs[i] === 'boolean') {
+        cacheParam = theArgs[i]
+        cacheEndpoint = theArgs[i+1]
+      } else if (i === 1 && typeof theArgs[i] === 'boolean') {
+        cacheParam = theArgs[i]
+        cacheEndpoint = theArgs[i+1]
+      } else if (i === 0 && typeof theArgs[i] === 'string') {
+        index = theArgs[i]
+      } else if (i === 1 && typeof theArgs[i] === 'string') {
+        index = theArgs[i]
       }
     }
 
     let params = {
       Key: query,
       TableName: tableName
-    };
+    }
 
     if (filter) {
-      let keys = Object.keys(filter);
-      params["QueryFilter"] = {};
+      let keys = Object.keys(filter)
+      params['QueryFilter'] = {}
       keys.forEach((item) => {
-        let fkey = "EQ";
-        let fvalue = filter[item];
-        if (typeof filter[item] === "object") {
-          fkey = Object.keys(filter[item])[0];
-          fvalue = filter[item][fkey];
+        let fkey = 'EQ'
+        let fvalue = filter[item]
+        if (typeof filter[item] === 'object') {
+          fkey = Object.keys(filter[item])[0]
+          fvalue = filter[item][fkey]
         }
-        params["QueryFilter"][item] = {
+        params['QueryFilter'][item] = {
           ComparisonOperator: fkey,
           AttributeValueList: [fvalue]
-        };
-      });
+        }
+      })
     }
 
     if (index) {
-      params["IndexName"] = index;
+      params['IndexName'] = index
     }
-    if (typeof projection !== "undefined") {
-      params["AttributesToGet"] = Object.keys(projection);
+
+    if (cacheParam === true) {
+      cacheClient = await daxClientConnection(cacheEndpoint)
     }
-    let result = await awsfun(client, "get", params);
-    return result["Item"];
+    if (typeof projection !== 'undefined') {
+      params['AttributesToGet'] = Object.keys(projection)
+    }
+    let result = cacheParam ? await awsfun(cacheClient, 'get', params) : await awsfun(client, 'get', params)
+    return result['Item']
   } catch (e) {
-    throw new Error(e.message);
+    throw Error(e)
   }
-};
+}
 
 exports.updateOne = async (tableName, query, update, ...theArgs) => {
   try {
