@@ -1,6 +1,6 @@
 {
   "name": "@awsx/dynamodb",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "DynamoDB and DAX data mapper for node.js",
   "main": "index.js",
   "scripts": {
