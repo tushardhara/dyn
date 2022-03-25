@@ -374,6 +374,7 @@ exports.findAll = async (tableName, query, ...theArgs) => {
     }
     if (cacheParam === true) {
       cacheClient = await daxClientConnection(cacheEndpoint)
+      params["ConsistentRead"] = false
     }
     if (filter) {
       let keys = Object.keys(filter);
@@ -509,6 +510,7 @@ exports.findOne = async (tableName, query, ...theArgs) => {
 
     if (cacheParam === true) {
       cacheClient = await daxClientConnection(cacheEndpoint)
+      params["ConsistentRead"] = false
     }
     if (typeof projection !== 'undefined') {
       params['AttributesToGet'] = Object.keys(projection)
